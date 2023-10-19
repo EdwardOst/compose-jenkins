@@ -1,0 +1,51 @@
+name: jenkins
+
+services:
+
+  jenkins_server:
+    image: ${JENKINS_IMAGE}:${JENKINS_VERSION}
+    restart: always
+    environment:
+      - JAVA_OPTS
+      - JENKINS_JAVA_OPTS
+      - JENKINS_OPTS
+      - JENKINS_SLAVE_AGENT_PORT
+      - JENKINS_UC
+      - JENKINS_UC_EXPERIMENTAL
+      - JENKINS_INCREMENTALS_REPO_MIRROR
+      - JENKINS_UC_DOWNLOAD
+      - PLUGINS_FORCE_UPGRADE
+    expose:
+      # The jenkins port is exposed to other linked services within the docker network
+      - ${JENKINS_CONTAINER_PORT}
+    ports:
+      # The jenkins port exposed on the host is mapped to ip 127.0.0.1 so it should only be visible to the host and not other host network systems.
+      # If the host port is not specified or the empty string a port will be dynamically assigned.
+      - target: ${JENKINS_CONTAINER_PORT}
+        published: ${JENKINS_HOST_PORT}
+        host_ip: ${JENKINS_HOST_IP}
+        protocol: tcp
+        mode: host
+      - target: ${JENKINS_CONTAINER_JNLP_PORT}
+        published: ${JENKINS_HOST_JNLP_PORT}
+        host_ip: ${JENKINS_HOST_IP}
+        protocol: tcp
+        mode: host
+    volumes:
+      - jenkins-conf:/var/jenkins_home
+      - jenkins-plugins:/usr/share/jenkins/ref/plugins
+    labels:
+      com.qlik.presales.description: "jenkins"
+      com.qlik.presales.author: "ed.ost@qlik.com"
+      com.qlik.presales.source: "https://hub.docker.com/r/jenkins/jenkins"
+
+#   ssh-agent:
+#    image: jenkins/ssh-agent
+
+volumes:
+  jenkins-conf:
+    labels:
+      com.qlik.presales.description: "jenkins configuration"
+  jenkins-plugins:
+    labels:
+      com.qlik.presales.description: "jenkins plugins"
